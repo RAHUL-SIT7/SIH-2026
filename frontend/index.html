@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Kisan Raksha Network — SIH26131 Demo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+  :root {
+    --green: #1e7d32;
+    --green-dark: #14531f;
+    --bg: #f4f7f2;
+    --card: #ffffff;
+    --text: #21281f;
+    --muted: #62705c;
+    --warn: #e6a400;
+    --danger: #d1453d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  header {
+    background: linear-gradient(120deg, var(--green-dark), var(--green));
+    color: white;
+    padding: 24px 32px;
+  }
+  header h1 { margin: 0 0 4px; font-size: 22px; }
+  header p { margin: 0; opacity: 0.85; font-size: 14px; }
+  main {
+    max-width: 1100px;
+    margin: 24px auto;
+    padding: 0 20px 60px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .full { grid-column: 1 / -1; }
+  .card {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 20px 22px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .card h2 {
+    margin-top: 0;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  label { display: block; font-size: 13px; color: var(--muted); margin: 10px 0 4px; }
+  input, select { width: 100%; padding: 9px 10px; border-radius: 8px; border: 1px solid #d7ddd2; font-size: 14px; }
+  button {
+    margin-top: 14px;
+    background: var(--green);
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  button:hover { background: var(--green-dark); }
+  .result-box { margin-top: 16px; padding: 14px; border-radius: 10px; background: #f0f5ee; font-size: 14px; display: none; }
+  .risk-score { font-size: 36px; font-weight: 700; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; color: white; }
+  .badge.LOW { background: var(--green); }
+  .badge.MODERATE { background: var(--warn); }
+  .badge.HIGH { background: var(--danger); }
+  ul { padding-left: 18px; margin: 8px 0; }
+  #map { height: 320px; border-radius: 10px; }
+  .status { font-size: 13px; color: var(--muted); margin-top: 8px; }
+  .flow {
+    display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px;
+  }
+  .flow span {
+    background: #eef4ec; padding: 6px 12px; border-radius: 20px; font-size: 12px; color: var(--green-dark);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🌾 Kisan Raksha Network</h1>
+  <p>SIH26131 — Predictive Crop Disease &amp; Pest Early-Warning System (Government of Maharashtra)</p>
+  <div class="flow">
+    <span>1. Detect from photo</span>
+    <span>2. Predict outbreak risk (weather + community)</span>
+    <span>3. Report to network</span>
+    <span>4. Nearby farmers get early warning</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- 1. Detection -->
+  <div class="card">
+    <h2>📷 Step 1 — Leaf Disease Detection</h2>
+    <label>Crop type</label>
+    <select id="cropType">
+      <option value="tomato">Tomato</option>
+      <option value="potato">Potato</option>
+      <option value="wheat">Wheat</option>
+      <option value="rice">Rice</option>
+      <option value="cotton">Cotton</option>
+    </select>
+    <label>Leaf photo</label>
+    <input type="file" id="imageInput" accept="image/*" />
+    <button onclick="runDetection()">Detect Disease</button>
+    <div class="result-box" id="detectResult"></div>
+  </div>
+
+  <!-- 2. Risk prediction -->
+  <div class="card">
+    <h2>⚠️ Step 2 — Predictive Outbreak Risk</h2>
+    <button type="button" onclick="useMyLocation()" style="background:#2d6cdf;">📍 Use My Location</button>
+    <div id="locationStatus" class="status"></div>
+    <label>Latitude</label>
+    <input type="number" id="lat" value="18.5204" step="0.0001" />
+    <label>Longitude</label>
+    <input type="number" id="lon" value="73.8567" step="0.0001" />
+    <label>Crop type</label>
+    <select id="riskCrop">
+      <option value="tomato">Tomato</option>
+      <option value="potato">Potato</option>
+      <option value="wheat">Wheat</option>
+      <option value="rice">Rice</option>
+      <option value="cotton">Cotton</option>
+    </select>
+    <button onclick="runRiskPrediction()">Predict Risk</button>
+    <div class="result-box" id="riskResult"></div>
+  </div>
+
+  <!-- 3. Community report -->
+  <div class="card full">
+    <h2>👥 Step 3 — Report to Community Network</h2>
+    <p class="status">Submitting a report feeds the shared early-warning layer that Step 2 reads from — this is what makes the risk prediction improve as more farmers use the app.</p>
+    <label>Farmer name</label>
+    <input type="text" id="farmerName" value="Ramesh Patil" />
+    <button onclick="submitReport()">Submit Report</button>
+    <div class="result-box" id="reportResult"></div>
+  </div>
+
+  <!-- 4. Heatmap -->
+  <div class="card full">
+    <h2>🗺️ Community Outbreak Map</h2>
+    <p class="status">Live view of all reports submitted so far. Refresh after submitting a report above.</p>
+    <div id="map"></div>
+    <button onclick="loadHeatmap()">Refresh Map</button>
+  </div>
+
+</main>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const API_BASE = window.location.origin;
+let map, markersLayer;
+let lastDetection = null;
+
+function initMap() {
+  map = L.map('map').setView([18.5204, 73.8567], 11);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+  markersLayer = L.layerGroup().addTo(map);
+}
+
+function useMyLocation() {
+  const status = document.getElementById('locationStatus');
+  if (!navigator.geolocation) {
+    status.textContent = "Geolocation not supported by this browser — please enter coordinates manually.";
+    return;
+  }
+  status.textContent = "Getting your location...";
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      document.getElementById('lat').value = position.coords.latitude.toFixed(4);
+      document.getElementById('lon').value = position.coords.longitude.toFixed(4);
+      status.textContent = "Location detected ✓";
+      if (map) map.setView([position.coords.latitude, position.coords.longitude], 13);
+    },
+    (err) => {
+      status.textContent = "Could not get location (" + err.message + "). Enter manually below.";
+    }
+  );
+}
+
+async function runDetection() {
+  const fileInput = document.getElementById('imageInput');
+  const crop = document.getElementById('cropType').value;
+  const box = document.getElementById('detectResult');
+
+  if (!fileInput.files.length) {
+    alert("Please choose a leaf image first.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('crop_type', crop);
+  formData.append('file', fileInput.files[0]);
+
+  box.style.display = 'block';
+  box.innerHTML = "Analyzing image...";
+
+  try {
+    const res = await fetch(`${API_BASE}/detect`, { method: 'POST', body: formData });
+    const data = await res.json();
+    lastDetection = data;
+    box.innerHTML = `
+      <strong>${data.disease}</strong> (${Math.round(data.confidence * 100)}% confidence)<br/>
+      <span style="color:${data.is_healthy ? '#1e7d32' : '#d1453d'}">${data.is_healthy ? 'Healthy' : 'Disease detected'}</span>
+      <p style="color:#62705c; font-size:13px;">${data.explanation}</p>
+    `;
+  } catch (e) {
+    box.innerHTML = "Error: could not reach backend. Is it running on port 8000?";
+  }
+}
+
+async function runRiskPrediction() {
+  const lat = parseFloat(document.getElementById('lat').value);
+  const lon = parseFloat(document.getElementById('lon').value);
+  const crop = document.getElementById('riskCrop').value;
+  const box = document.getElementById('riskResult');
+
+  box.style.display = 'block';
+  box.innerHTML = "Calculating risk...";
+
+  try {
+    const res = await fetch(`${API_BASE}/predict-risk`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ latitude: lat, longitude: lon, crop_type: crop })
+    });
+    const data = await res.json();
+    box.innerHTML = `
+      <div class="risk-score">${data.risk_score}<span style="font-size:16px;">/100</span></div>
+      <span class="badge ${data.risk_level}">${data.risk_level} RISK</span>
+      <p><strong>${data.recommendation}</strong></p>
+      <ul>${data.reasons.map(r => `<li>${r}</li>`).join('')}</ul>
+    `;
+  } catch (e) {
+    box.innerHTML = "Error: could not reach backend. Is it running on port 8000?";
+  }
+}
+
+async function submitReport() {
+  const box = document.getElementById('reportResult');
+  const lat = parseFloat(document.getElementById('lat').value);
+  const lon = parseFloat(document.getElementById('lon').value);
+  const crop = document.getElementById('riskCrop').value;
+  const farmer = document.getElementById('farmerName').value;
+
+  const disease = lastDetection ? lastDetection.disease : "Early Blight";
+  const confidence = lastDetection ? lastDetection.confidence : 0.8;
+
+  box.style.display = 'block';
+  box.innerHTML = "Submitting...";
+
+  try {
+    const res = await fetch(`${API_BASE}/community/report`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        farmer_name: farmer, latitude: lat, longitude: lon,
+        crop_type: crop, disease: disease, confidence: confidence
+      })
+    });
+    const data = await res.json();
+    box.innerHTML = `Report #${data.id} submitted. It now feeds nearby farmers' risk predictions.`;
+    loadHeatmap();
+  } catch (e) {
+    box.innerHTML = "Error: could not reach backend.";
+  }
+}
+
+async function loadHeatmap() {
+  try {
+    const res = await fetch(`${API_BASE}/community/heatmap`);
+    const reports = await res.json();
+    markersLayer.clearLayers();
+    reports.forEach(r => {
+      L.circleMarker([r.latitude, r.longitude], {
+        radius: 8, color: '#d1453d', fillColor: '#d1453d', fillOpacity: 0.6
+      }).bindPopup(`<b>${r.disease}</b><br/>${r.crop_type} — ${r.farmer_name}<br/>${new Date(r.created_at).toLocaleString()}`)
+        .addTo(markersLayer);
+    });
+  } catch (e) {
+    console.error("Could not load heatmap", e);
+  }
+}
+
+initMap();
+loadHeatmap();
+</script>
+
+</body>
+</html>
