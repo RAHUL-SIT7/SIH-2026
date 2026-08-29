@@ -7,99 +7,86 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
   :root {
-    --green: #1e7d32;
-    --green-dark: #14531f;
-    --bg: #f4f7f2;
-    --card: #ffffff;
-    --text: #21281f;
-    --muted: #62705c;
-    --warn: #e6a400;
-    --danger: #d1453d;
+    --green: #1e7d32; --green-dark: #14531f; --bg: #f4f7f2;
+    --card: #ffffff; --text: #21281f; --muted: #62705c;
+    --warn: #e6a400; --danger: #d1453d; --blue: #2d6cdf;
   }
   * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-  }
-  header {
-    background: linear-gradient(120deg, var(--green-dark), var(--green));
-    color: white;
-    padding: 24px 32px;
-  }
+  body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); }
+  header { background: linear-gradient(120deg, var(--green-dark), var(--green)); color: white; padding: 24px 32px; }
   header h1 { margin: 0 0 4px; font-size: 22px; }
   header p { margin: 0; opacity: 0.85; font-size: 14px; }
-  main {
-    max-width: 1100px;
-    margin: 24px auto;
-    padding: 0 20px 60px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-  }
+  .lang-bar { display: flex; gap: 8px; margin-top: 14px; align-items: center; flex-wrap: wrap; }
+  .lang-bar span { font-size: 13px; opacity: 0.85; }
+  .lang-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 6px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; }
+  .lang-btn.active { background: white; color: var(--green-dark); font-weight: 600; }
+  main { max-width: 1100px; margin: 24px auto; padding: 0 20px 60px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   .full { grid-column: 1 / -1; }
-  .card {
-    background: var(--card);
-    border-radius: 12px;
-    padding: 20px 22px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-  }
-  .card h2 {
-    margin-top: 0;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+  .card { background: var(--card); border-radius: 12px; padding: 20px 22px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .card h2 { margin-top: 0; font-size: 16px; display: flex; align-items: center; gap: 8px; }
   label { display: block; font-size: 13px; color: var(--muted); margin: 10px 0 4px; }
   input, select { width: 100%; padding: 9px 10px; border-radius: 8px; border: 1px solid #d7ddd2; font-size: 14px; }
-  button {
-    margin-top: 14px;
-    background: var(--green);
-    color: white;
-    border: none;
-    padding: 10px 16px;
-    border-radius: 8px;
-    font-size: 14px;
-    cursor: pointer;
-  }
+  button { margin-top: 14px; background: var(--green); color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 14px; cursor: pointer; }
   button:hover { background: var(--green-dark); }
-  .result-box { margin-top: 16px; padding: 14px; border-radius: 10px; background: #f0f5ee; font-size: 14px; display: none; }
+  .photo-btns { display: flex; gap: 10px; margin-top: 10px; }
+  .photo-btns label { flex: 1; margin: 0; background: #eef4ec; border: 2px dashed #b9cdb1; border-radius: 10px; padding: 18px 10px; text-align: center; cursor: pointer; color: var(--green-dark); font-weight: 600; font-size: 14px; }
+  .photo-btns input[type=file] { display: none; }
+  .result-box { margin-top: 16px; padding: 16px; border-radius: 10px; background: #f0f5ee; font-size: 15px; display: none; }
+  .result-box.retake { background: #fff4e5; border: 1px solid var(--warn); }
+  .big-disease { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .conf-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; color: white; margin-bottom: 10px; }
+  .conf-badge.healthy { background: var(--green); }
+  .conf-badge.sick { background: var(--danger); }
+  .voice-btn { background: var(--blue); display: inline-flex; align-items: center; gap: 6px; font-size: 13px; padding: 8px 14px; margin-top: 0; }
+  .voice-btn:hover { background: #1e4fa8; }
+  .voice-btn.speaking { background: var(--danger); animation: pulse 1.2s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.7; } }
+  .remedy-tabs { display: flex; gap: 8px; margin: 14px 0 10px; }
+  .remedy-tab { flex: 1; padding: 8px; text-align: center; border-radius: 8px; background: #eef4ec; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--green-dark); }
+  .remedy-tab.active { background: var(--green); color: white; }
+  .remedy-text { font-size: 15px; line-height: 1.5; background: white; border: 1px solid #e0e6db; border-radius: 8px; padding: 12px; }
+  .referral-banner { margin-top: 14px; background: #fdeceb; border: 1px solid var(--danger); border-radius: 10px; padding: 12px 14px; font-size: 14px; display: flex; gap: 10px; align-items: flex-start; }
+  .referral-banner .r-icon { font-size: 22px; }
+  .steps { margin-top: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .step-card { border-radius: 12px; padding: 14px; background: #fafcf9; border: 1px solid #e5ebe1; }
+  .step-visual { border-radius: 10px; padding: 18px; display: flex; align-items: center; justify-content: center; position: relative; min-height: 110px; }
+  .step-visual svg { width: 90px; height: 90px; }
+  .step-badge { position: absolute; top: 8px; right: 10px; background: rgba(0,0,0,0.55); color: white; font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; }
+  .step-title { font-weight: 700; font-size: 14px; margin: 10px 0 3px; }
+  .step-detail { font-size: 13px; color: var(--muted); line-height: 1.4; }
+  .step-num { background: var(--green); color: white; width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; margin-right: 6px; }
+  .candidate-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 10px; }
+  .candidate-card { background: white; border: 2px solid #e0e6db; border-radius: 10px; overflow: hidden; cursor: pointer; text-align: center; }
+  .candidate-card:hover { border-color: var(--green); }
+  .candidate-card img { width: 100%; height: 80px; object-fit: cover; background: #eef4ec; display: block; }
+  .candidate-name { font-size: 12px; padding: 6px; font-weight: 600; }
   .risk-score { font-size: 36px; font-weight: 700; }
   .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; color: white; }
-  .badge.LOW { background: var(--green); }
-  .badge.MODERATE { background: var(--warn); }
-  .badge.HIGH { background: var(--danger); }
+  .badge.LOW { background: var(--green); } .badge.MODERATE { background: var(--warn); } .badge.HIGH { background: var(--danger); }
   ul { padding-left: 18px; margin: 8px 0; }
   #map { height: 320px; border-radius: 10px; }
   .status { font-size: 13px; color: var(--muted); margin-top: 8px; }
-  .flow {
-    display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px;
-  }
-  .flow span {
-    background: #eef4ec; padding: 6px 12px; border-radius: 20px; font-size: 12px; color: var(--green-dark);
-  }
+  .flow { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+  .flow span { background: #eef4ec; padding: 6px 12px; border-radius: 20px; font-size: 12px; color: var(--green-dark); }
 </style>
 </head>
 <body>
 
 <header>
   <h1>🌾 Kisan Raksha Network</h1>
-  <p>SIH26131 — Predictive Crop Disease &amp; Pest Early-Warning System (Government of Maharashtra)</p>
-  <div class="flow">
-    <span>1. Detect from photo</span>
-    <span>2. Predict outbreak risk (weather + community)</span>
-    <span>3. Report to network</span>
-    <span>4. Nearby farmers get early warning</span>
+  <p>SIH26131 — Early Detection &amp; Management of Crop Diseases and Pest Infestations</p>
+  <div class="lang-bar">
+    <span>🌐 Language:</span>
+    <button class="lang-btn active" data-lang="en" onclick="setLang('en')">English</button>
+    <button class="lang-btn" data-lang="hi" onclick="setLang('hi')">हिन्दी</button>
+    <button class="lang-btn" data-lang="mr" onclick="setLang('mr')">मराठी</button>
   </div>
 </header>
 
 <main>
 
-  <!-- 1. Detection -->
   <div class="card">
-    <h2>📷 Step 1 — Leaf Disease Detection</h2>
+    <h2>📷 Step 1 — Leaf Photo</h2>
     <label>Crop type</label>
     <select id="cropType">
       <option value="tomato">Tomato</option>
@@ -108,15 +95,23 @@
       <option value="rice">Rice</option>
       <option value="cotton">Cotton</option>
     </select>
-    <label>Leaf photo</label>
-    <input type="file" id="imageInput" accept="image/*" />
+
+    <div class="photo-btns">
+      <label>📸 Take Photo
+        <input type="file" id="cameraInput" accept="image/*" capture="environment" />
+      </label>
+      <label>🖼️ Choose from Gallery
+        <input type="file" id="galleryInput" accept="image/*" />
+      </label>
+    </div>
+    <div class="status" id="fileStatus"></div>
     <button onclick="runDetection()">Detect Disease</button>
+
     <div class="result-box" id="detectResult"></div>
   </div>
 
-  <!-- 2. Risk prediction -->
   <div class="card">
-    <h2>⚠️ Step 2 — Predictive Outbreak Risk</h2>
+    <h2>⚠️ Step 2 — Outbreak Risk</h2>
     <button type="button" onclick="useMyLocation()" style="background:#2d6cdf;">📍 Use My Location</button>
     <div id="locationStatus" class="status"></div>
     <label>Latitude</label>
@@ -135,20 +130,18 @@
     <div class="result-box" id="riskResult"></div>
   </div>
 
-  <!-- 3. Community report -->
   <div class="card full">
     <h2>👥 Step 3 — Report to Community Network</h2>
-    <p class="status">Submitting a report feeds the shared early-warning layer that Step 2 reads from — this is what makes the risk prediction improve as more farmers use the app.</p>
+    <p class="status">Submitting a report feeds the shared early-warning layer that Step 2 reads from.</p>
     <label>Farmer name</label>
     <input type="text" id="farmerName" value="Ramesh Patil" />
     <button onclick="submitReport()">Submit Report</button>
     <div class="result-box" id="reportResult"></div>
   </div>
 
-  <!-- 4. Heatmap -->
   <div class="card full">
     <h2>🗺️ Community Outbreak Map</h2>
-    <p class="status">Live view of all reports submitted so far. Refresh after submitting a report above.</p>
+    <p class="status">Live view of all reports submitted so far.</p>
     <div id="map"></div>
     <button onclick="loadHeatmap()">Refresh Map</button>
   </div>
@@ -160,64 +153,278 @@
 const API_BASE = window.location.origin;
 let map, markersLayer;
 let lastDetection = null;
+let currentLang = "en";
+let availableVoices = [];
+
+const STEP_BG = ["#fdf1dd", "#e3f0fd", "#e5f7ea", "#f0e9fb"];
+const STEP_ACCENT = ["#c8791a", "#2d6cdf", "#1e7d32", "#7b3fd1"];
+
+const SVG_ICONS = {
+  cut: `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M25 30 C25 25 30 22 34 25 L55 45" stroke="CURRENT" stroke-width="4" stroke-linecap="round"/>
+    <path d="M25 70 C25 75 30 78 34 75 L55 55" stroke="CURRENT" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="22" cy="28" r="6" stroke="CURRENT" stroke-width="4"/>
+    <circle cx="22" cy="72" r="6" stroke="CURRENT" stroke-width="4"/>
+    <path d="M55 50 L85 20" stroke="CURRENT" stroke-width="4" stroke-linecap="round"/>
+  </svg>`,
+  spray: `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="35" y="45" width="30" height="40" rx="6" stroke="CURRENT" stroke-width="4"/>
+    <rect x="42" y="30" width="16" height="15" rx="2" stroke="CURRENT" stroke-width="4"/>
+    <path d="M50 30 L50 18" stroke="CURRENT" stroke-width="4" stroke-linecap="round"/>
+    <path d="M50 18 L65 12" stroke="CURRENT" stroke-width="4" stroke-linecap="round"/>
+    <line x1="42" y1="60" x2="58" y2="60" stroke="CURRENT" stroke-width="3" stroke-linecap="round"/>
+    <line x1="42" y1="70" x2="58" y2="70" stroke="CURRENT" stroke-width="3" stroke-linecap="round"/>
+  </svg>`,
+  water: `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M50 15 C50 15 28 45 28 62 C28 76 38 85 50 85 C62 85 72 76 72 62 C72 45 50 15 50 15 Z" stroke="CURRENT" stroke-width="4" fill="CURRENT" fill-opacity="0.15"/>
+  </svg>`,
+  monitor: `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 50 C25 28 75 28 88 50 C75 72 25 72 12 50 Z" stroke="CURRENT" stroke-width="4"/>
+    <circle cx="50" cy="50" r="14" stroke="CURRENT" stroke-width="4"/>
+    <circle cx="50" cy="50" r="5" fill="CURRENT"/>
+  </svg>`,
+  isolate: `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="36" stroke="CURRENT" stroke-width="5"/>
+    <line x1="26" y1="26" x2="74" y2="74" stroke="CURRENT" stroke-width="5" stroke-linecap="round"/>
+  </svg>`,
+};
+
+const UI_TEXT = {
+  en: { detecting: "Analyzing photo...", retakeTitle: "⚠️ Photo not clear enough", healthy: "Healthy", diseased: "Disease detected", chemical: "Chemical", organic: "Organic / Home", stepsTitle: "Follow these steps", listen: "🔊 Listen", listenStop: "⏹ Stop", expert: "👨‍🌾 Talk to an Expert", matchTitle: "Does your leaf look like one of these? Tap to confirm." },
+  hi: { detecting: "फोटो जांची जा रही है...", retakeTitle: "⚠️ फोटो साफ़ नहीं है", healthy: "स्वस्थ", diseased: "रोग मिला", chemical: "रासायनिक", organic: "जैविक / घरेलू", stepsTitle: "ये कदम अपनाएँ", listen: "🔊 सुनें", listenStop: "⏹ रोकें", expert: "👨‍🌾 विशेषज्ञ से बात करें", matchTitle: "क्या आपकी पत्ती इनमें से किसी जैसी दिखती है? सही वाला चुनें।" },
+  mr: { detecting: "फोटो तपासत आहोत...", retakeTitle: "⚠️ फोटो स्पष्ट नाही", healthy: "निरोगी", diseased: "रोग आढळला", chemical: "रासायनिक", organic: "सेंद्रिय / घरगुती", stepsTitle: "हे टप्पे अनुसरा", listen: "🔊 ऐका", listenStop: "⏹ थांबवा", expert: "👨‍🌾 तज्ञांशी बोला", matchTitle: "तुमचे पान यापैकी एकासारखे दिसते का? योग्य ते निवडा." }
+};
+const SPEECH_LANG = { en: "en-IN", hi: "hi-IN", mr: "mr-IN" };
+
+function loadVoices() {
+  availableVoices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+}
+if (window.speechSynthesis) {
+  loadVoices();
+  window.speechSynthesis.onvoiceschanged = loadVoices;
+}
+function pickVoice(langCode) {
+  if (!availableVoices.length) return null;
+  let match = availableVoices.find(v => v.lang.toLowerCase() === langCode.toLowerCase());
+  if (!match) match = availableVoices.find(v => v.lang.toLowerCase().startsWith(langCode.split('-')[0]));
+  return match || null;
+}
+
+function setLang(lang) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+  if (lastDetection) renderDetectionResult(lastDetection);
+}
 
 function initMap() {
   map = L.map('map').setView([18.5204, 73.8567], 11);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors'
-  }).addTo(map);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
   markersLayer = L.layerGroup().addTo(map);
 }
 
 function useMyLocation() {
   const status = document.getElementById('locationStatus');
-  if (!navigator.geolocation) {
-    status.textContent = "Geolocation not supported by this browser — please enter coordinates manually.";
-    return;
-  }
+  if (!navigator.geolocation) { status.textContent = "Geolocation not supported."; return; }
   status.textContent = "Getting your location...";
   navigator.geolocation.getCurrentPosition(
-    (position) => {
-      document.getElementById('lat').value = position.coords.latitude.toFixed(4);
-      document.getElementById('lon').value = position.coords.longitude.toFixed(4);
+    (pos) => {
+      document.getElementById('lat').value = pos.coords.latitude.toFixed(4);
+      document.getElementById('lon').value = pos.coords.longitude.toFixed(4);
       status.textContent = "Location detected ✓";
-      if (map) map.setView([position.coords.latitude, position.coords.longitude], 13);
+      if (map) map.setView([pos.coords.latitude, pos.coords.longitude], 13);
     },
-    (err) => {
-      status.textContent = "Could not get location (" + err.message + "). Enter manually below.";
-    }
+    (err) => { status.textContent = "Could not get location. Enter manually below."; }
   );
 }
 
+document.getElementById('cameraInput').addEventListener('change', (e) => {
+  if (e.target.files.length) document.getElementById('fileStatus').textContent = "📸 Photo captured ✓";
+});
+document.getElementById('galleryInput').addEventListener('change', (e) => {
+  if (e.target.files.length) document.getElementById('fileStatus').textContent = "🖼️ Photo selected ✓";
+});
+
+function getSelectedFile() {
+  const cam = document.getElementById('cameraInput');
+  const gal = document.getElementById('galleryInput');
+  if (cam.files.length) return cam.files[0];
+  if (gal.files.length) return gal.files[0];
+  return null;
+}
+
 async function runDetection() {
-  const fileInput = document.getElementById('imageInput');
+  const file = getSelectedFile();
   const crop = document.getElementById('cropType').value;
   const box = document.getElementById('detectResult');
-
-  if (!fileInput.files.length) {
-    alert("Please choose a leaf image first.");
-    return;
-  }
+  if (!file) { alert("Please take a photo or choose one from gallery first."); return; }
 
   const formData = new FormData();
   formData.append('crop_type', crop);
-  formData.append('file', fileInput.files[0]);
+  formData.append('file', file);
 
+  box.className = "result-box";
   box.style.display = 'block';
-  box.innerHTML = "Analyzing image...";
+  box.innerHTML = UI_TEXT[currentLang].detecting;
 
   try {
     const res = await fetch(`${API_BASE}/detect`, { method: 'POST', body: formData });
     const data = await res.json();
     lastDetection = data;
-    box.innerHTML = `
-      <strong>${data.disease}</strong> (${Math.round(data.confidence * 100)}% confidence)<br/>
-      <span style="color:${data.is_healthy ? '#1e7d32' : '#d1453d'}">${data.is_healthy ? 'Healthy' : 'Disease detected'}</span>
-      <p style="color:#62705c; font-size:13px;">${data.explanation}</p>
-    `;
+    renderDetectionResult(data);
   } catch (e) {
-    box.innerHTML = "Error: could not reach backend. Is it running on port 8000?";
+    box.innerHTML = "Error: could not reach backend.";
   }
+}
+
+function stepVisual(iconKey, index) {
+  const bg = STEP_BG[index % STEP_BG.length];
+  const accent = STEP_ACCENT[index % STEP_ACCENT.length];
+  const svg = (SVG_ICONS[iconKey] || SVG_ICONS.monitor).replaceAll("CURRENT", accent);
+  return `<div class="step-visual" style="background:${bg};">${svg}<span class="step-badge">Step ${index+1}</span></div>`;
+}
+
+function renderCandidates(candidates) {
+  if (!candidates || !candidates.length) return "";
+  let html = `<div class="status" style="margin-top:14px; font-weight:600;">${UI_TEXT[currentLang].matchTitle}</div>`;
+  html += `<div class="candidate-grid">`;
+  candidates.forEach(c => {
+    const safeName = c.disease.replace(/'/g, "\\'");
+    html += `
+      <div class="candidate-card" onclick="selectCandidate('${safeName}')">
+        <img src="${c.reference_image || ''}" onerror="this.style.display='none'" />
+        <div class="candidate-name">${c.disease}</div>
+      </div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
+function renderDetectionResult(data) {
+  const box = document.getElementById('detectResult');
+  const t = UI_TEXT[currentLang];
+  box.style.display = 'block';
+
+  if (data.needs_retake) {
+    box.className = "result-box retake";
+    let html = `<div class="big-disease">${t.retakeTitle}</div><p>${data.retake_tips[currentLang]}</p>`;
+    html += renderCandidates(data.candidates);
+    box.innerHTML = html;
+    return;
+  }
+
+  box.className = "result-box";
+  const isHealthy = data.is_healthy;
+  const badgeClass = isHealthy ? "healthy" : "sick";
+  const badgeText = isHealthy ? t.healthy : t.diseased;
+
+  let html = `
+    <div class="big-disease">${data.disease}</div>
+    <span class="conf-badge ${badgeClass}">${badgeText} — ${Math.round(data.confidence*100)}%</span>
+    <button class="voice-btn" id="voiceBtn" onclick="toggleSpeak()">${t.listen}</button>
+  `;
+
+  // Always show possible-condition images for a diseased result, so the
+  // farmer can visually confirm — not just when confidence is low.
+  if (!isHealthy) {
+    html += renderCandidates(data.candidates);
+  }
+
+  if (!isHealthy && data.remedy) {
+    const r = data.remedy;
+    html += `
+      <p style="margin-top:14px;">${r.description[currentLang]}</p>
+      <div class="remedy-tabs">
+        <div class="remedy-tab active" id="tab-chem" onclick="showRemedyTab('chem')">🧪 ${t.chemical}</div>
+        <div class="remedy-tab" id="tab-org" onclick="showRemedyTab('org')">🌿 ${t.organic}</div>
+      </div>
+      <div class="remedy-text" id="remedy-chem">${r.chemical_remedy[currentLang]}</div>
+      <div class="remedy-text" id="remedy-org" style="display:none;">${r.organic_remedy[currentLang]}</div>
+    `;
+    if (data.referral) {
+      html += `<div class="referral-banner"><span class="r-icon">🚨</span><div><strong>${t.expert}</strong><br/>${data.referral[currentLang]}</div></div>`;
+    }
+    html += `<div class="steps"><div class="status" style="margin-top:10px; font-weight:600;">${t.stepsTitle}</div>`;
+    r.steps.forEach((s, i) => {
+      html += `
+        <div class="step-card">
+          ${stepVisual(s.icon, i)}
+          <div class="step-title"><span class="step-num">${i+1}</span>${s.title[currentLang]}</div>
+          <div class="step-detail">${s.detail[currentLang]}</div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+  }
+
+  box.innerHTML = html;
+}
+
+function showRemedyTab(which) {
+  document.getElementById('tab-chem').classList.toggle('active', which === 'chem');
+  document.getElementById('tab-org').classList.toggle('active', which === 'org');
+  document.getElementById('remedy-chem').style.display = which === 'chem' ? 'block' : 'none';
+  document.getElementById('remedy-org').style.display = which === 'org' ? 'block' : 'none';
+}
+
+async function selectCandidate(diseaseName) {
+  const box = document.getElementById('detectResult');
+  box.innerHTML = "Loading remedy...";
+  try {
+    const res = await fetch(`${API_BASE}/remedy-lookup?disease=${encodeURIComponent(diseaseName)}`);
+    const data = await res.json();
+    lastDetection = data;
+    renderDetectionResult(data);
+  } catch (e) {
+    box.innerHTML = "Error loading remedy.";
+  }
+}
+
+function cleanTextForSpeech(text) {
+  return text
+    .replace(/[-–—]/g, ' ')
+    .replace(/,/g, ' ')
+    .replace(/[()]/g, ' ')
+    .replace(/_/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function toggleSpeak() {
+  const btn = document.getElementById('voiceBtn');
+  if (!window.speechSynthesis) { alert("Voice not supported in this browser."); return; }
+
+  if (window.speechSynthesis.speaking) {
+    window.speechSynthesis.cancel();
+    btn.textContent = UI_TEXT[currentLang].listen;
+    btn.classList.remove('speaking');
+    return;
+  }
+
+  if (!lastDetection) return;
+  let text = `${lastDetection.disease}. `;
+  if (!lastDetection.is_healthy && lastDetection.remedy) {
+    const r = lastDetection.remedy;
+    text += r.description[currentLang] + ". ";
+    text += r.chemical_remedy[currentLang] + ". ";
+    r.steps.forEach((s) => { text += `${s.title[currentLang]}. ${s.detail[currentLang]}. `; });
+  }
+  text = cleanTextForSpeech(text);
+
+  const utter = new SpeechSynthesisUtterance(text);
+  const langCode = SPEECH_LANG[currentLang];
+  utter.lang = langCode;
+  const voice = pickVoice(langCode);
+  if (voice) utter.voice = voice;
+  utter.rate = 0.82;
+  utter.pitch = 1.0;
+  utter.volume = 1.0;
+
+  utter.onend = () => { btn.textContent = UI_TEXT[currentLang].listen; btn.classList.remove('speaking'); };
+  utter.onerror = () => { btn.textContent = UI_TEXT[currentLang].listen; btn.classList.remove('speaking'); };
+
+  btn.textContent = UI_TEXT[currentLang].listenStop;
+  btn.classList.add('speaking');
+  window.speechSynthesis.speak(utter);
 }
 
 async function runRiskPrediction() {
@@ -225,14 +432,11 @@ async function runRiskPrediction() {
   const lon = parseFloat(document.getElementById('lon').value);
   const crop = document.getElementById('riskCrop').value;
   const box = document.getElementById('riskResult');
-
   box.style.display = 'block';
   box.innerHTML = "Calculating risk...";
-
   try {
     const res = await fetch(`${API_BASE}/predict-risk`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ latitude: lat, longitude: lon, crop_type: crop })
     });
     const data = await res.json();
@@ -242,9 +446,7 @@ async function runRiskPrediction() {
       <p><strong>${data.recommendation}</strong></p>
       <ul>${data.reasons.map(r => `<li>${r}</li>`).join('')}</ul>
     `;
-  } catch (e) {
-    box.innerHTML = "Error: could not reach backend. Is it running on port 8000?";
-  }
+  } catch (e) { box.innerHTML = "Error: could not reach backend."; }
 }
 
 async function submitReport() {
@@ -253,28 +455,19 @@ async function submitReport() {
   const lon = parseFloat(document.getElementById('lon').value);
   const crop = document.getElementById('riskCrop').value;
   const farmer = document.getElementById('farmerName').value;
-
-  const disease = lastDetection ? lastDetection.disease : "Early Blight";
-  const confidence = lastDetection ? lastDetection.confidence : 0.8;
-
+  const disease = lastDetection && !lastDetection.needs_retake ? lastDetection.disease : "Early Blight";
+  const confidence = lastDetection && !lastDetection.needs_retake ? lastDetection.confidence : 0.8;
   box.style.display = 'block';
   box.innerHTML = "Submitting...";
-
   try {
     const res = await fetch(`${API_BASE}/community/report`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        farmer_name: farmer, latitude: lat, longitude: lon,
-        crop_type: crop, disease: disease, confidence: confidence
-      })
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ farmer_name: farmer, latitude: lat, longitude: lon, crop_type: crop, disease: disease, confidence: confidence })
     });
     const data = await res.json();
-    box.innerHTML = `Report #${data.id} submitted. It now feeds nearby farmers' risk predictions.`;
+    box.innerHTML = `Report #${data.id} submitted.`;
     loadHeatmap();
-  } catch (e) {
-    box.innerHTML = "Error: could not reach backend.";
-  }
+  } catch (e) { box.innerHTML = "Error: could not reach backend."; }
 }
 
 async function loadHeatmap() {
@@ -283,14 +476,11 @@ async function loadHeatmap() {
     const reports = await res.json();
     markersLayer.clearLayers();
     reports.forEach(r => {
-      L.circleMarker([r.latitude, r.longitude], {
-        radius: 8, color: '#d1453d', fillColor: '#d1453d', fillOpacity: 0.6
-      }).bindPopup(`<b>${r.disease}</b><br/>${r.crop_type} — ${r.farmer_name}<br/>${new Date(r.created_at).toLocaleString()}`)
+      L.circleMarker([r.latitude, r.longitude], { radius: 8, color: '#d1453d', fillColor: '#d1453d', fillOpacity: 0.6 })
+        .bindPopup(`<b>${r.disease}</b><br/>${r.crop_type} — ${r.farmer_name}`)
         .addTo(markersLayer);
     });
-  } catch (e) {
-    console.error("Could not load heatmap", e);
-  }
+  } catch (e) { console.error(e); }
 }
 
 initMap();

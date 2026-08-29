@@ -73,3 +73,32 @@ def get_recent_reports_near(latitude, longitude, radius_km, days):
             item["distance_km"] = round(d, 2)
             nearby.append(item)
     return nearby
+def get_dashboard_stats():
+    """Aggregated stats for the agriculture officials dashboard."""
+    conn = get_connection()
+    rows = conn.execute("SELECT * FROM reports ORDER BY created_at DESC").fetchall()
+    conn.close()
+
+    reports = [dict(r) for r in rows]
+    total = len(reports)
+
+    disease_counts = {}
+    crop_counts = {}
+    for r in reports:
+        disease_counts[r["disease"]] = disease_counts.get(r["disease"], 0) + 1
+        crop_counts[r["crop_type"]] = crop_counts.get(r["crop_type"], 0) + 1
+
+    # Simple hotspot grouping: round lat/lon to ~1km grid and count reports per cell
+    hotspots = {}
+    for r in reports:
+        key = (round(r["latitude"], 2), round(r["longitude"], 2))
+        hotspots[key] = hotspots.get(key, 0) + 1
+    top_hotspots = sorted(hotspots.items(), key=lambda x: x[1], reverse=True)[:5]
+
+    return {
+        "total_reports": total,
+        "disease_breakdown": sorted(disease_counts.items(), key=lambda x: x[1], reverse=True),
+        "crop_breakdown": sorted(crop_counts.items(), key=lambda x: x[1], reverse=True),
+        "top_hotspots": [{"lat": h[0][0], "lon": h[0][1], "count": h[1]} for h in top_hotspots],
+        "recent_reports": reports[:15],
+    }

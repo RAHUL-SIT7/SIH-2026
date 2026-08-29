@@ -2,7 +2,8 @@ from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from datetime import datetime
-
+from remedies import get_remedy
+from database import get_dashboard_stats
 from database import init_db, insert_report, get_all_reports
 from detection import classify_leaf_image
 from risk_engine import calculate_outbreak_risk
@@ -45,6 +46,23 @@ async def detect_disease(
     return result
 
 
+@app.get("/remedy-lookup", tags=["Detection"])
+def remedy_lookup(disease: str):
+    """Look up full remedy info for a disease name — used when farmer
+    manually confirms a match from the candidate images."""
+    remedy = get_remedy(disease)
+    is_healthy = "healthy" in disease.lower()
+    return {
+        "needs_retake": False,
+        "disease": disease,
+        "confidence": 0.75,
+        "is_healthy": is_healthy,
+        "remedy": None if is_healthy else remedy,
+        "referral": None if is_healthy else remedy.get("referral"),
+        "candidates": [],
+    }
+
+
 @app.post("/predict-risk", response_model=RiskResponse, tags=["Risk Engine"])
 def predict_risk(req: RiskRequest):
     """The core differentiator: weather + community signals -> outbreak risk score."""
@@ -66,11 +84,16 @@ def create_report(report: ReportCreate):
     return {"id": report_id, "message": "Report added to community network"}
 
 
+
 @app.get("/community/heatmap", tags=["Community"])
 def heatmap():
     """All reports for map visualization on the frontend."""
     return get_all_reports()
 
+@app.get("/admin/dashboard-data", tags=["Admin Dashboard"])
+def dashboard_data():
+    """Aggregated statistics for the agriculture officials dashboard."""
+    return get_dashboard_stats()
 
 # Serve the demo frontend (single-page app) at /app
 app.mount("/app", StaticFiles(directory="../frontend", html=True), name="frontend")

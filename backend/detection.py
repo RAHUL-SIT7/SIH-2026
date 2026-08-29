@@ -1,14 +1,10 @@
 """
 Disease detection module with a SAFETY LAYER.
 
-Core differentiator: if the model's confidence is below a threshold,
-we do NOT return a diagnosis — a wrong diagnosis can lead a farmer to
-apply the wrong treatment and damage the crop further. Instead we ask
-the farmer to retake the photo, with concrete tips, in their language.
-
-Loads a trained MobileNetV3 model (PlantVillage + fine-tuning) exported
-to TFLite. Prefers "v2" fine-tuned model if present, falls back to v1,
-then to a color-heuristic if no model file exists at all.
+If the model's confidence is below a threshold, we do NOT return a
+diagnosis — instead we return top-3 candidate diseases with reference
+images, so the farmer can visually confirm which one matches, and ask
+them to retake the photo if unsure.
 """
 
 from PIL import Image
@@ -35,11 +31,9 @@ def _load_model():
     global _interpreter, _class_names, _active_model_name
     if _interpreter is not None:
         return
-
     if os.path.exists(CLASS_NAMES_PATH):
         with open(CLASS_NAMES_PATH, "r") as f:
             _class_names = [line.strip() for line in f if line.strip()]
-
     for path in MODEL_CANDIDATES:
         if os.path.exists(path):
             import tensorflow as tf
@@ -48,7 +42,6 @@ def _load_model():
             _active_model_name = os.path.basename(path)
             print(f"[detection.py] Loaded model: {_active_model_name}")
             break
-
     if _interpreter is None:
         print("[detection.py] No .tflite model found — using fallback heuristic.")
 
@@ -62,7 +55,6 @@ def _format_disease_name(raw_name: str):
 
 def classify_leaf_image(image_bytes: bytes, crop_type: str):
     _load_model()
-
     if _interpreter is not None and _class_names:
         return _classify_with_model(image_bytes, crop_type)
     else:
@@ -88,6 +80,8 @@ def _classify_with_model(image_bytes: bytes, crop_type: str):
         i for i, name in enumerate(_class_names)
         if name.split("___")[0].lower().replace("_", " ").startswith(crop_key)
     ]
+    pool = matching_indices if matching_indices else list(range(len(_class_names)))
+
     if matching_indices:
         top_idx = max(matching_indices, key=lambda i: output[i])
     else:
@@ -98,8 +92,21 @@ def _classify_with_model(image_bytes: bytes, crop_type: str):
     crop, disease = _format_disease_name(raw_name)
     is_healthy = "healthy" in disease.lower()
 
+    # Top-3 candidates (excluding "healthy" entries) for visual confirmation
+    top3_idx = sorted(pool, key=lambda i: output[i], reverse=True)[:3]
+    candidates = []
+    for idx in top3_idx:
+        _, c_disease = _format_disease_name(_class_names[idx])
+        if "healthy" in c_disease.lower():
+            continue
+        remedy_entry = get_remedy(c_disease)
+        candidates.append({
+            "disease": c_disease,
+            "confidence": round(float(output[idx]), 2),
+            "reference_image": remedy_entry.get("reference_image"),
+        })
+
     # --- SAFETY LAYER ---
-    # Low confidence -> don't diagnose, ask for a retake instead.
     if confidence < CONFIDENCE_THRESHOLD:
         return {
             "needs_retake": True,
@@ -110,8 +117,11 @@ def _classify_with_model(image_bytes: bytes, crop_type: str):
             "explanation": f"Model confidence ({round(confidence*100)}%) is below the safety threshold ({int(CONFIDENCE_THRESHOLD*100)}%).",
             "retake_tips": RETAKE_TIPS,
             "remedy": None,
+            "referral": None,
+            "candidates": candidates,
         }
 
+    remedy = None if is_healthy else get_remedy(disease)
     explanation = (
         f"MobileNetV3 model ({_active_model_name}, trained on PlantVillage) predicts "
         f"'{disease}' on {crop} with {round(confidence*100)}% confidence."
@@ -125,11 +135,11 @@ def _classify_with_model(image_bytes: bytes, crop_type: str):
         "is_healthy": is_healthy,
         "explanation": explanation,
         "retake_tips": None,
-        "remedy": None if is_healthy else get_remedy(disease),
+        "remedy": remedy,
+        "referral": None if is_healthy else remedy.get("referral"),
+        "candidates": candidates,
     }
 
-
-# ---- Fallback heuristic (used only if no model files are present at all) ----
 
 DISEASE_LIBRARY = {
     "tomato": ["Early Blight", "Late Blight", "Leaf Mold", "Healthy"],
@@ -159,16 +169,17 @@ def _classify_with_heuristic(image_bytes: bytes, crop_type: str):
             "confidence": round(min(0.99, 0.80 + green_ratio * 0.2), 2),
             "crop": crop_type, "is_healthy": True,
             "explanation": f"[Fallback heuristic] Leaf area is {round(green_ratio*100)}% green.",
-            "retake_tips": None, "remedy": None,
+            "retake_tips": None, "remedy": None, "referral": None, "candidates": [],
         }
     else:
-        candidates = [d for d in possible_diseases if d != "Healthy"]
-        idx = min(int(stress_ratio * len(candidates)) % max(len(candidates), 1), len(candidates) - 1)
-        disease = candidates[idx] if candidates else "Unknown"
+        candidates_list = [d for d in possible_diseases if d != "Healthy"]
+        idx = min(int(stress_ratio * len(candidates_list)) % max(len(candidates_list), 1), len(candidates_list) - 1)
+        disease = candidates_list[idx] if candidates_list else "Unknown"
+        remedy = get_remedy(disease)
         return {
             "needs_retake": False, "disease": disease,
             "confidence": round(min(0.97, 0.55 + stress_ratio * 2), 2),
             "crop": crop_type, "is_healthy": False,
             "explanation": f"[Fallback heuristic] Pattern consistent with {disease}.",
-            "retake_tips": None, "remedy": get_remedy(disease),
+            "retake_tips": None, "remedy": remedy, "referral": remedy.get("referral"), "candidates": [],
         }
