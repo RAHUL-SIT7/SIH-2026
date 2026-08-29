@@ -1,4 +1,4 @@
-# Kisan Raksha Network — SIH26131 Demo
+# KisanAI — SIH26131 Demo
 
 **Problem Statement:** SIH26131 — Early detection and management of crop diseases and pest infestations (Government of Maharashtra)
 
