@@ -7,7 +7,7 @@ pixel values (Keras applies scaling internally). Dividing by 255 before
 inference breaks the input signal and causes near-constant, image-independent
 predictions (the exact "same result for every photo" bug).
 """
-
+import tensorflow as tf
 from PIL import Image
 import io
 import os
