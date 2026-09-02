@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Kisan Raksha Network — SIH26131 Demo</title>
+<title>Kisan Rakshak — SIH26131 Demo</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
@@ -20,24 +20,32 @@
   .lang-bar span { font-size: 13px; opacity: 0.85; }
   .lang-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 6px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; }
   .lang-btn.active { background: white; color: var(--green-dark); font-weight: 600; }
-  main { max-width: 1100px; margin: 24px auto; padding: 0 20px 60px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  main { max-width: 1100px; margin: 24px auto; padding: 0 20px 60px; display: grid; grid-template-columns: 1.3fr 0.7fr; gap: 20px; }
   .full { grid-column: 1 / -1; }
   .card { background: var(--card); border-radius: 12px; padding: 20px 22px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .card.compact { padding: 14px 16px; }
   .card h2 { margin-top: 0; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+  .card.compact h2 { font-size: 14px; margin-bottom: 8px; }
   label { display: block; font-size: 13px; color: var(--muted); margin: 10px 0 4px; }
+  .compact label { font-size: 12px; margin: 6px 0 3px; }
   input, select { width: 100%; padding: 9px 10px; border-radius: 8px; border: 1px solid #d7ddd2; font-size: 14px; }
+  .compact input, .compact select { padding: 6px 8px; font-size: 13px; }
   button { margin-top: 14px; background: var(--green); color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 14px; cursor: pointer; }
+  .compact button { margin-top: 8px; padding: 7px 12px; font-size: 13px; }
   button:hover { background: var(--green-dark); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .photo-btns { display: flex; gap: 10px; margin-top: 10px; }
   .photo-btns label { flex: 1; margin: 0; background: #eef4ec; border: 2px dashed #b9cdb1; border-radius: 10px; padding: 18px 10px; text-align: center; cursor: pointer; color: var(--green-dark); font-weight: 600; font-size: 14px; }
   .photo-btns input[type=file] { display: none; }
   .result-box { margin-top: 16px; padding: 16px; border-radius: 10px; background: #f0f5ee; font-size: 15px; display: none; }
   .result-box.retake { background: #fff4e5; border: 1px solid var(--warn); }
+  .try-again-btn { background: var(--blue); margin-top: 0; margin-bottom: 14px; }
+  .try-again-btn:hover { background: #1e4fa8; }
   .big-disease { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
   .conf-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; color: white; margin-bottom: 10px; }
   .conf-badge.healthy { background: var(--green); }
   .conf-badge.sick { background: var(--danger); }
-  .voice-btn { background: var(--blue); display: inline-flex; align-items: center; gap: 6px; font-size: 13px; padding: 8px 14px; margin-top: 0; }
+  .voice-btn { background: var(--blue); display: inline-flex; align-items: center; gap: 6px; font-size: 13px; padding: 8px 14px; margin-top: 0; margin-left: 8px; }
   .voice-btn:hover { background: #1e4fa8; }
   .voice-btn.speaking { background: var(--danger); animation: pulse 1.2s infinite; }
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.7; } }
@@ -60,20 +68,33 @@
   .candidate-card:hover { border-color: var(--green); }
   .candidate-card img { width: 100%; height: 80px; object-fit: cover; background: #eef4ec; display: block; }
   .candidate-name { font-size: 12px; padding: 6px; font-weight: 600; }
-  .risk-score { font-size: 36px; font-weight: 700; }
-  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; color: white; }
-  .badge.LOW { background: var(--green); } .badge.MODERATE { background: var(--warn); } .badge.HIGH { background: var(--danger); }
-  ul { padding-left: 18px; margin: 8px 0; }
-  #map { height: 320px; border-radius: 10px; }
+  .risk-hero { display: flex; align-items: center; gap: 12px; background: white; border-radius: 10px; padding: 10px 14px; border: 1px solid #e0e6db; }
+  .risk-hero .risk-score { font-size: 28px; font-weight: 700; }
+  .risk-hero .risk-info { flex: 1; }
+  .risk-hero .risk-label { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+  .risk-icon-badge { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .risk-icon-badge.LOW { background: #e3f3e5; }
+  .risk-icon-badge.MODERATE { background: #fdf1dd; }
+  .risk-icon-badge.HIGH { background: #fdeceb; }
+  .recommendation-banner { margin-top: 10px; padding: 10px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; display: flex; gap: 8px; align-items: center; }
+  .recommendation-banner.LOW { background: #e3f3e5; color: var(--green-dark); }
+  .recommendation-banner.MODERATE { background: #fdf1dd; color: #8a5a10; }
+  .recommendation-banner.HIGH { background: #fdeceb; color: #a02620; }
+  .reasons-toggle { font-size: 12px; color: var(--blue); cursor: pointer; margin-top: 8px; display: inline-block; }
+  .reason-cards { margin-top: 8px; display: none; flex-direction: column; gap: 6px; }
+  .reason-cards.open { display: flex; }
+  .reason-card { display: flex; gap: 8px; align-items: flex-start; background: white; border: 1px solid #e0e6db; border-radius: 8px; padding: 8px 10px; font-size: 12px; }
+  .reason-card .r-emoji { font-size: 16px; flex-shrink: 0; }
+  #map { height: 220px; border-radius: 8px; }
   .status { font-size: 13px; color: var(--muted); margin-top: 8px; }
-  .flow { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
-  .flow span { background: #eef4ec; padding: 6px 12px; border-radius: 20px; font-size: 12px; color: var(--green-dark); }
+  .compact .status { font-size: 11px; }
+  .mini-note { font-size: 11px; color: var(--muted); margin-top: 4px; }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>🌾 Kisan Raksha Network</h1>
+  <h1>🌾 Kisan Rakshak</h1>
   <p>SIH26131 — Early Detection &amp; Management of Crop Diseases and Pest Infestations</p>
   <div class="lang-bar">
     <span>🌐 Language:</span>
@@ -86,15 +107,34 @@
 <main>
 
   <div class="card">
-    <h2>📷 Step 1 — Leaf Photo</h2>
+    <h2>📷 —Upload Photo of Plant</h2>
     <label>Crop type</label>
     <select id="cropType">
+      <option value="auto">🔍 Auto-detect crop</option>
       <option value="tomato">Tomato</option>
       <option value="potato">Potato</option>
-      <option value="wheat">Wheat</option>
-      <option value="rice">Rice</option>
-      <option value="cotton">Cotton</option>
+      <option value="corn">Corn (Maize)</option>
+      <option value="apple">Apple</option>
+      <option value="grape">Grape</option>
+      <option value="pepper">Bell Pepper</option>
     </select>
+
+    <div class="row2">
+      <div>
+        <label>Growth stage <span class="mini-note">(optional)</span></label>
+        <select id="growthStage">
+          <option value="">Not specified</option>
+          <option value="seedling">Seedling</option>
+          <option value="vegetative">Vegetative</option>
+          <option value="flowering">Flowering</option>
+          <option value="fruiting">Fruiting</option>
+        </select>
+      </div>
+      <div>
+        <label>Region <span class="mini-note">(auto from location below)</span></label>
+        <input type="text" id="regionDisplay" value="Not set — use location below" disabled />
+      </div>
+    </div>
 
     <div class="photo-btns">
       <label>📸 Take Photo
@@ -110,38 +150,44 @@
     <div class="result-box" id="detectResult"></div>
   </div>
 
-  <div class="card">
-    <h2>⚠️ Step 2 — Outbreak Risk</h2>
+  <div class="card compact">
+    <h2>⚠️ Outbreak Risk</h2>
     <button type="button" onclick="useMyLocation()" style="background:#2d6cdf;">📍 Use My Location</button>
     <div id="locationStatus" class="status"></div>
-    <label>Latitude</label>
-    <input type="number" id="lat" value="18.5204" step="0.0001" />
-    <label>Longitude</label>
-    <input type="number" id="lon" value="73.8567" step="0.0001" />
+    <div class="row2">
+      <div>
+        <label>Latitude</label>
+        <input type="number" id="lat" value="18.5204" step="0.0001" />
+      </div>
+      <div>
+        <label>Longitude</label>
+        <input type="number" id="lon" value="73.8567" step="0.0001" />
+      </div>
+    </div>
     <label>Crop type</label>
     <select id="riskCrop">
       <option value="tomato">Tomato</option>
       <option value="potato">Potato</option>
-      <option value="wheat">Wheat</option>
-      <option value="rice">Rice</option>
-      <option value="cotton">Cotton</option>
+      <option value="corn">Corn (Maize)</option>
+      <option value="apple">Apple</option>
+      <option value="grape">Grape</option>
+      <option value="pepper">Bell Pepper</option>
     </select>
     <button onclick="runRiskPrediction()">Predict Risk</button>
     <div class="result-box" id="riskResult"></div>
+
+    <div style="margin-top:16px; border-top:1px solid #e5ebe1; padding-top:12px;">
+      <h2 style="font-size:13px;">👥 Report to Network</h2>
+      <p class="status">Feeds the shared early-warning layer above.</p>
+      <label>Farmer name</label>
+      <input type="text" id="farmerName" value="Ramesh Patil" />
+      <button onclick="submitReport()">Submit Report</button>
+      <div class="result-box" id="reportResult"></div>
+    </div>
   </div>
 
-  <div class="card full">
-    <h2>👥 Step 3 — Report to Community Network</h2>
-    <p class="status">Submitting a report feeds the shared early-warning layer that Step 2 reads from.</p>
-    <label>Farmer name</label>
-    <input type="text" id="farmerName" value="Ramesh Patil" />
-    <button onclick="submitReport()">Submit Report</button>
-    <div class="result-box" id="reportResult"></div>
-  </div>
-
-  <div class="card full">
+  <div class="card full compact">
     <h2>🗺️ Community Outbreak Map</h2>
-    <p class="status">Live view of all reports submitted so far.</p>
     <div id="map"></div>
     <button onclick="loadHeatmap()">Refresh Map</button>
   </div>
@@ -155,6 +201,7 @@ let map, markersLayer;
 let lastDetection = null;
 let currentLang = "en";
 let availableVoices = [];
+let selectedFile = null;
 
 const STEP_BG = ["#fdf1dd", "#e3f0fd", "#e5f7ea", "#f0e9fb"];
 const STEP_ACCENT = ["#c8791a", "#2d6cdf", "#1e7d32", "#7b3fd1"];
@@ -190,9 +237,9 @@ const SVG_ICONS = {
 };
 
 const UI_TEXT = {
-  en: { detecting: "Analyzing photo...", retakeTitle: "⚠️ Photo not clear enough", healthy: "Healthy", diseased: "Disease detected", chemical: "Chemical", organic: "Organic / Home", stepsTitle: "Follow these steps", listen: "🔊 Listen", listenStop: "⏹ Stop", expert: "👨‍🌾 Talk to an Expert", matchTitle: "Does your leaf look like one of these? Tap to confirm." },
-  hi: { detecting: "फोटो जांची जा रही है...", retakeTitle: "⚠️ फोटो साफ़ नहीं है", healthy: "स्वस्थ", diseased: "रोग मिला", chemical: "रासायनिक", organic: "जैविक / घरेलू", stepsTitle: "ये कदम अपनाएँ", listen: "🔊 सुनें", listenStop: "⏹ रोकें", expert: "👨‍🌾 विशेषज्ञ से बात करें", matchTitle: "क्या आपकी पत्ती इनमें से किसी जैसी दिखती है? सही वाला चुनें।" },
-  mr: { detecting: "फोटो तपासत आहोत...", retakeTitle: "⚠️ फोटो स्पष्ट नाही", healthy: "निरोगी", diseased: "रोग आढळला", chemical: "रासायनिक", organic: "सेंद्रिय / घरगुती", stepsTitle: "हे टप्पे अनुसरा", listen: "🔊 ऐका", listenStop: "⏹ थांबवा", expert: "👨‍🌾 तज्ञांशी बोला", matchTitle: "तुमचे पान यापैकी एकासारखे दिसते का? योग्य ते निवडा." }
+  en: { detecting: "Analyzing photo...", retakeTitle: "⚠️ Photo not clear enough", healthy: "Healthy", diseased: "Disease detected", chemical: "Chemical", organic: "Organic / Home", stepsTitle: "Follow these steps", listen: "🔊 Listen", listenStop: "⏹ Stop", expert: "👨‍🌾 Talk to an Expert", matchTitle: "Does your leaf look like one of these? Tap to confirm.", tryAnother: "🔄 Try Another Photo" },
+  hi: { detecting: "फोटो जांची जा रही है...", retakeTitle: "⚠️ फोटो साफ़ नहीं है", healthy: "स्वस्थ", diseased: "रोग मिला", chemical: "रासायनिक", organic: "जैविक / घरेलू", stepsTitle: "ये कदम अपनाएँ", listen: "🔊 सुनें", listenStop: "⏹ रोकें", expert: "👨‍🌾 विशेषज्ञ से बात करें", matchTitle: "क्या आपकी पत्ती इनमें से किसी जैसी दिखती है? सही वाला चुनें।", tryAnother: "🔄 दूसरी फोटो आज़माएँ" },
+  mr: { detecting: "फोटो तपासत आहोत...", retakeTitle: "⚠️ फोटो स्पष्ट नाही", healthy: "निरोगी", diseased: "रोग आढळला", chemical: "रासायनिक", organic: "सेंद्रिय / घरगुती", stepsTitle: "हे टप्पे अनुसरा", listen: "🔊 ऐका", listenStop: "⏹ थांबवा", expert: "👨‍🌾 तज्ञांशी बोला", matchTitle: "तुमचे पान यापैकी एकासारखे दिसते का? योग्य ते निवडा.", tryAnother: "🔄 दुसरा फोटो वापरा" }
 };
 const SPEECH_LANG = { en: "en-IN", hi: "hi-IN", mr: "mr-IN" };
 
@@ -231,6 +278,8 @@ function useMyLocation() {
       document.getElementById('lat').value = pos.coords.latitude.toFixed(4);
       document.getElementById('lon').value = pos.coords.longitude.toFixed(4);
       status.textContent = "Location detected ✓";
+      document.getElementById('regionDisplay').value =
+        `${pos.coords.latitude.toFixed(2)}, ${pos.coords.longitude.toFixed(2)}`;
       if (map) map.setView([pos.coords.latitude, pos.coords.longitude], 13);
     },
     (err) => { status.textContent = "Could not get location. Enter manually below."; }
@@ -238,29 +287,50 @@ function useMyLocation() {
 }
 
 document.getElementById('cameraInput').addEventListener('change', (e) => {
-  if (e.target.files.length) document.getElementById('fileStatus').textContent = "📸 Photo captured ✓";
+  if (e.target.files.length) {
+    selectedFile = e.target.files[0];
+    document.getElementById('galleryInput').value = "";
+    document.getElementById('fileStatus').textContent = "📸 Photo captured ✓";
+  }
 });
 document.getElementById('galleryInput').addEventListener('change', (e) => {
-  if (e.target.files.length) document.getElementById('fileStatus').textContent = "🖼️ Photo selected ✓";
+  if (e.target.files.length) {
+    selectedFile = e.target.files[0];
+    document.getElementById('cameraInput').value = "";
+    document.getElementById('fileStatus').textContent = "🖼️ Photo selected ✓";
+  }
 });
 
 function getSelectedFile() {
-  const cam = document.getElementById('cameraInput');
-  const gal = document.getElementById('galleryInput');
-  if (cam.files.length) return cam.files[0];
-  if (gal.files.length) return gal.files[0];
-  return null;
+  return selectedFile;
+}
+
+function resetPhotoFlow() {
+  selectedFile = null;
+  document.getElementById('cameraInput').value = "";
+  document.getElementById('galleryInput').value = "";
+  document.getElementById('fileStatus').textContent = "";
+  const box = document.getElementById('detectResult');
+  box.style.display = 'none';
+  box.innerHTML = "";
+  lastDetection = null;
 }
 
 async function runDetection() {
   const file = getSelectedFile();
   const crop = document.getElementById('cropType').value;
+  const growthStage = document.getElementById('growthStage').value;
+  const lat = document.getElementById('lat').value;
+  const lon = document.getElementById('lon').value;
   const box = document.getElementById('detectResult');
   if (!file) { alert("Please take a photo or choose one from gallery first."); return; }
 
   const formData = new FormData();
   formData.append('crop_type', crop);
   formData.append('file', file);
+  if (growthStage) formData.append('growth_stage', growthStage);
+  if (lat) formData.append('latitude', lat);
+  if (lon) formData.append('longitude', lon);
 
   box.className = "result-box";
   box.style.display = 'block';
@@ -292,7 +362,7 @@ function renderCandidates(candidates) {
     html += `
       <div class="candidate-card" onclick="selectCandidate('${safeName}')">
         <img src="${c.reference_image || ''}" onerror="this.style.display='none'" />
-        <div class="candidate-name">${c.disease}</div>
+        <div class="candidate-name">${c.disease_display ? c.disease_display[currentLang] : c.disease}</div>
       </div>`;
   });
   html += `</div>`;
@@ -304,9 +374,12 @@ function renderDetectionResult(data) {
   const t = UI_TEXT[currentLang];
   box.style.display = 'block';
 
+  const tryAgainBtn = `<button class="try-again-btn" onclick="resetPhotoFlow()">${t.tryAnother}</button>`;
+
   if (data.needs_retake) {
     box.className = "result-box retake";
-    let html = `<div class="big-disease">${t.retakeTitle}</div><p>${data.retake_tips[currentLang]}</p>`;
+    let html = tryAgainBtn;
+    html += `<div class="big-disease">${t.retakeTitle}</div><p>${data.retake_tips ? data.retake_tips[currentLang] : (data.explanation || '')}</p>`;
     html += renderCandidates(data.candidates);
     box.innerHTML = html;
     return;
@@ -317,14 +390,13 @@ function renderDetectionResult(data) {
   const badgeClass = isHealthy ? "healthy" : "sick";
   const badgeText = isHealthy ? t.healthy : t.diseased;
 
-  let html = `
-    <div class="big-disease">${data.disease}</div>
+  let html = tryAgainBtn;
+  html += `
+    <div class="big-disease">${data.disease_display ? data.disease_display[currentLang] : data.disease}</div>
     <span class="conf-badge ${badgeClass}">${badgeText} — ${Math.round(data.confidence*100)}%</span>
     <button class="voice-btn" id="voiceBtn" onclick="toggleSpeak()">${t.listen}</button>
   `;
 
-  // Always show possible-condition images for a diseased result, so the
-  // farmer can visually confirm — not just when confidence is low.
   if (!isHealthy) {
     html += renderCandidates(data.candidates);
   }
@@ -345,11 +417,14 @@ function renderDetectionResult(data) {
     }
     html += `<div class="steps"><div class="status" style="margin-top:10px; font-weight:600;">${t.stepsTitle}</div>`;
     r.steps.forEach((s, i) => {
+      const rawDetail = s.detail[currentLang];
+      const chemLabel = currentLang === 'hi' ? 'रासायनिक छिड़काव' : currentLang === 'mr' ? 'रासायनिक फवारणी' : 'the chemical spray';
+      const detailText = rawDetail.replace("{REMEDY_TYPE}", chemLabel);
       html += `
         <div class="step-card">
           ${stepVisual(s.icon, i)}
           <div class="step-title"><span class="step-num">${i+1}</span>${s.title[currentLang]}</div>
-          <div class="step-detail">${s.detail[currentLang]}</div>
+          <div class="step-detail" data-template="${rawDetail}">${detailText}</div>
         </div>
       `;
     });
@@ -364,6 +439,13 @@ function showRemedyTab(which) {
   document.getElementById('tab-org').classList.toggle('active', which === 'org');
   document.getElementById('remedy-chem').style.display = which === 'chem' ? 'block' : 'none';
   document.getElementById('remedy-org').style.display = which === 'org' ? 'block' : 'none';
+
+  const remedyLabel = which === 'chem'
+    ? { en: "the chemical spray", hi: "रासायनिक छिड़काव", mr: "रासायनिक फवारणी" }
+    : { en: "the organic/home remedy", hi: "जैविक/घरेलू उपाय", mr: "सेंद्रिय/घरगुती उपाय" };
+  document.querySelectorAll('.step-detail[data-template]').forEach(el => {
+    el.textContent = el.dataset.template.replace("{REMEDY_TYPE}", remedyLabel[currentLang]);
+  });
 }
 
 async function selectCandidate(diseaseName) {
@@ -406,7 +488,7 @@ function toggleSpeak() {
     const r = lastDetection.remedy;
     text += r.description[currentLang] + ". ";
     text += r.chemical_remedy[currentLang] + ". ";
-    r.steps.forEach((s) => { text += `${s.title[currentLang]}. ${s.detail[currentLang]}. `; });
+    r.steps.forEach((s) => { text += `${s.title[currentLang]}. `; });
   }
   text = cleanTextForSpeech(text);
 
@@ -415,8 +497,8 @@ function toggleSpeak() {
   utter.lang = langCode;
   const voice = pickVoice(langCode);
   if (voice) utter.voice = voice;
-  utter.rate = 0.82;
-  utter.pitch = 1.0;
+  utter.rate = 0.8;
+  utter.pitch = 0.95;
   utter.volume = 1.0;
 
   utter.onend = () => { btn.textContent = UI_TEXT[currentLang].listen; btn.classList.remove('speaking'); };
@@ -427,26 +509,64 @@ function toggleSpeak() {
   window.speechSynthesis.speak(utter);
 }
 
+const RISK_ICONS = { LOW: "✅", MODERATE: "⚠️", HIGH: "🚨" };
+const RISK_UI = {
+  en: { title: "Outbreak Risk", low: "Low Risk", moderate: "Moderate Risk", high: "High Risk", why: "Why this risk?" },
+  hi: { title: "प्रकोप जोखिम", low: "कम जोखिम", moderate: "मध्यम जोखिम", high: "उच्च जोखिम", why: "यह जोखिम क्यों?" },
+  mr: { title: "उद्रेक धोका", low: "कमी धोका", moderate: "मध्यम धोका", high: "उच्च धोका", why: "हा धोका का?" }
+};
+
+function reasonToEmoji(reason) {
+  const r = reason.toLowerCase();
+  if (r.includes("humid")) return "💧";
+  if (r.includes("temperature")) return "🌡️";
+  if (r.includes("rain")) return "🌧️";
+  if (r.includes("soil") || r.includes("wetness")) return "🌱";
+  if (r.includes("solar") || r.includes("cloud")) return "☁️";
+  if (r.includes("nearby") || r.includes("report") || r.includes("cluster")) return "👥";
+  return "📊";
+}
+
+function toggleReasons() {
+  document.getElementById('reasonCards').classList.toggle('open');
+}
+
 async function runRiskPrediction() {
   const lat = parseFloat(document.getElementById('lat').value);
   const lon = parseFloat(document.getElementById('lon').value);
   const crop = document.getElementById('riskCrop').value;
   const box = document.getElementById('riskResult');
+  const t = RISK_UI[currentLang];
+
   box.style.display = 'block';
   box.innerHTML = "Calculating risk...";
+
   try {
     const res = await fetch(`${API_BASE}/predict-risk`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ latitude: lat, longitude: lon, crop_type: crop })
     });
     const data = await res.json();
+    const level = data.risk_level;
+    const levelLabel = level === "LOW" ? t.low : level === "MODERATE" ? t.moderate : t.high;
+
     box.innerHTML = `
-      <div class="risk-score">${data.risk_score}<span style="font-size:16px;">/100</span></div>
-      <span class="badge ${data.risk_level}">${data.risk_level} RISK</span>
-      <p><strong>${data.recommendation}</strong></p>
-      <ul>${data.reasons.map(r => `<li>${r}</li>`).join('')}</ul>
+      <div class="risk-hero">
+        <div class="risk-icon-badge ${level}">${RISK_ICONS[level]}</div>
+        <div class="risk-info">
+          <div class="risk-label">${t.title}</div>
+          <div class="risk-score">${data.risk_score}<span style="font-size:12px;">/100</span></div>
+        </div>
+      </div>
+      <div class="recommendation-banner ${level}">${RISK_ICONS[level]} ${levelLabel}: ${data.recommendation}</div>
+      <div class="reasons-toggle" onclick="toggleReasons()">${t.why} ▾</div>
+      <div class="reason-cards" id="reasonCards">
+        ${data.reasons.map(r => `<div class="reason-card"><span class="r-emoji">${reasonToEmoji(r)}</span><div>${r}</div></div>`).join('')}
+      </div>
     `;
-  } catch (e) { box.innerHTML = "Error: could not reach backend."; }
+  } catch (e) {
+    box.innerHTML = "Error: could not reach backend.";
+  }
 }
 
 async function submitReport() {

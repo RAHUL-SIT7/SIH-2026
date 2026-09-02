@@ -1,6 +1,30 @@
 """
-Remedy database + safety-layer messaging for Kisan Raksha Network.
+Remedy database + safety-layer messaging + farmer-friendly names
+for Kisan Raksha Network.
 """
+
+# Simple, farmer-friendly names for technical/scientific disease names.
+FRIENDLY_NAMES = {
+    "early blight": {"en": "Early Blight (brown spots)", "hi": "अगेती झुलसा (भूरे धब्बे)", "mr": "लवकर करपा (तपकिरी डाग)"},
+    "late blight": {"en": "Late Blight (fast spreading rot)", "hi": "पछेती झुलसा (तेज़ी से फैलने वाला रोग)", "mr": "उशिरा करपा (वेगाने पसरणारा रोग)"},
+    "septoria leaf spot": {"en": "Round Leaf Spot Disease", "hi": "गोल धब्बे रोग", "mr": "गोल ठिपके रोग"},
+    "spider mites": {"en": "Red Mite Pest (tiny red bugs)", "hi": "लाल मकड़ी कीट (छोटे लाल कीड़े)", "mr": "लाल कोळी कीड (लहान लाल किडे)"},
+    "leaf mold": {"en": "Leaf Mold (yellow patches)", "hi": "पत्ती फफूंद (पीले धब्बे)", "mr": "पान बुरशी (पिवळे डाग)"},
+    "bacterial spot": {"en": "Bacterial Spot Disease", "hi": "जीवाणु धब्बा रोग", "mr": "जिवाणू ठिपके रोग"},
+    "target spot": {"en": "Ring Spot Disease", "hi": "घेरेदार धब्बा रोग", "mr": "वर्तुळाकार ठिपके रोग"},
+    "yellow leaf curl virus": {"en": "Yellow Curly Leaf Disease", "hi": "पीली मुड़ी पत्ती रोग", "mr": "पिवळे वळलेले पान रोग"},
+    "mosaic virus": {"en": "Patchy Leaf Virus", "hi": "धब्बेदार पत्ती विषाणु", "mr": "ठिपकेदार पान विषाणू"},
+    "common rust": {"en": "Rust Disease (orange spots)", "hi": "रतुआ रोग (नारंगी धब्बे)", "mr": "तांबेरा रोग (नारिंगी डाग)"},
+}
+
+
+def get_friendly_name(disease_name: str, lang: str = "en") -> str:
+    key = (disease_name or "").strip().lower()
+    for db_key, names in FRIENDLY_NAMES.items():
+        if db_key in key:
+            return names.get(lang, names["en"])
+    return disease_name
+
 
 REMEDY_DB = {
     "early blight": {
@@ -25,7 +49,7 @@ REMEDY_DB = {
             {"icon": "cut", "title": {"en": "Remove infected leaves", "hi": "संक्रमित पत्तियाँ हटाएँ", "mr": "संक्रमित पाने काढा"},
              "detail": {"en": "Cut off and destroy affected lower leaves to stop spread.", "hi": "फैलाव रोकने के लिए प्रभावित निचली पत्तियों को काटकर नष्ट करें।", "mr": "प्रसार थांबवण्यासाठी प्रभावित खालची पाने कापून नष्ट करा."}},
             {"icon": "spray", "title": {"en": "Apply spray", "hi": "छिड़काव करें", "mr": "फवारणी करा"},
-             "detail": {"en": "Spray chemical or organic remedy evenly on all leaves, including undersides.", "hi": "सभी पत्तियों पर, नीचे की तरफ भी, समान रूप से छिड़काव करें।", "mr": "सर्व पानांवर, खालच्या बाजूनेही, समान फवारणी करा."}},
+             "detail": {"en": "Apply {REMEDY_TYPE} evenly on all leaves, including undersides.", "hi": "{REMEDY_TYPE} सभी पत्तियों पर, नीचे की तरफ भी, समान रूप से लगाएँ।", "mr": "{REMEDY_TYPE} सर्व पानांवर, खालच्या बाजूनेही, समान लावा."}},
             {"icon": "water", "title": {"en": "Avoid overhead watering", "hi": "ऊपर से पानी देने से बचें", "mr": "वरून पाणी देणे टाळा"},
              "detail": {"en": "Water at the base of the plant to keep leaves dry.", "hi": "पत्तियों को सूखा रखने के लिए पौधे की जड़ में पानी दें।", "mr": "पाने कोरडी ठेवण्यासाठी झाडाच्या मुळाशी पाणी द्या."}},
             {"icon": "monitor", "title": {"en": "Re-check in 7 days", "hi": "7 दिन में फिर से जाँचें", "mr": "7 दिवसांनी पुन्हा तपासा"},
@@ -56,7 +80,7 @@ REMEDY_DB = {
             {"icon": "cut", "title": {"en": "Remove severely infected plants", "hi": "गंभीर रूप से संक्रमित पौधे हटाएँ", "mr": "गंभीर संक्रमित रोपे काढा"},
              "detail": {"en": "Uproot and burn or bury badly affected plants away from the field.", "hi": "गंभीर रूप से प्रभावित पौधों को उखाड़ें और खेत से दूर जलाएँ या दबाएँ।", "mr": "गंभीर प्रभावित रोपे उपटून शेतापासून दूर जाळा किंवा पुरा."}},
             {"icon": "spray", "title": {"en": "Spray full field", "hi": "पूरे खेत में छिड़काव करें", "mr": "संपूर्ण शेतात फवारणी करा"},
-             "detail": {"en": "Treat the entire field, not just visibly affected plants.", "hi": "केवल दिखने वाले प्रभावित पौधों को नहीं, पूरे खेत का उपचार करें।", "mr": "फक्त दिसणाऱ्या प्रभावित रोपांनाच नाही, संपूर्ण शेताला उपचार द्या."}},
+             "detail": {"en": "Treat the entire field with {REMEDY_TYPE}, not just visibly affected plants.", "hi": "केवल दिखने वाले प्रभावित पौधों को नहीं, पूरे खेत में {REMEDY_TYPE} से उपचार करें।", "mr": "फक्त दिसणाऱ्या प्रभावित रोपांनाच नाही, संपूर्ण शेताला {REMEDY_TYPE} ने उपचार द्या."}},
             {"icon": "monitor", "title": {"en": "Check daily for 1 week", "hi": "1 सप्ताह तक रोज़ जाँचें", "mr": "1 आठवडा दररोज तपासा"},
              "detail": {"en": "This disease can return quickly. Daily monitoring is critical.", "hi": "यह रोग जल्दी वापस आ सकता है। रोज़ाना निगरानी ज़रूरी है।", "mr": "हा रोग लवकर परत येऊ शकतो. दररोज तपासणी महत्त्वाची आहे."}},
         ],
@@ -65,6 +89,87 @@ REMEDY_DB = {
             "hi": "यह रोग तेज़ी से फैलता है और पूरा खेत बर्बाद कर सकता है। कृपया यह फोटो 2 दिन के भीतर अपने नज़दीकी कृषि केंद्र को दिखाएँ।",
             "mr": "हा रोग वेगाने पसरतो आणि संपूर्ण शेत नष्ट करू शकतो. कृपया हा फोटो 2 दिवसांत तुमच्या जवळच्या कृषी केंद्राला दाखवा.",
         },
+    },
+    "septoria leaf spot": {
+        "severity": "Moderate",
+        "reference_image": None,
+        "description": {
+            "en": "Small round spots with dark edges and grey centers, usually starting on lower leaves.",
+            "hi": "छोटे गोल धब्बे जिनके किनारे काले और बीच में भूरे होते हैं, आमतौर पर निचली पत्तियों से शुरू होते हैं।",
+            "mr": "काळ्या कडा आणि करड्या मध्यभागासह लहान गोल डाग, सहसा खालच्या पानांपासून सुरू होतात.",
+        },
+        "chemical_remedy": {
+            "en": "Spray Chlorothalonil or Copper-based fungicide every 7 to 10 days.",
+            "hi": "क्लोरोथैलोनिल या कॉपर आधारित फफूंदनाशक का हर 7 से 10 दिन में छिड़काव करें।",
+            "mr": "क्लोरोथॅलोनिल किंवा कॉपर आधारित बुरशीनाशक दर 7 ते 10 दिवसांनी फवारा.",
+        },
+        "organic_remedy": {
+            "en": "Remove infected lower leaves. Improve air flow by spacing plants further apart.",
+            "hi": "संक्रमित निचली पत्तियों को हटा दें। पौधों के बीच दूरी बढ़ाकर हवा का संचार सुधारें।",
+            "mr": "संक्रमित खालची पाने काढा. रोपांमध्ये अंतर वाढवून हवा खेळती ठेवा.",
+        },
+        "steps": [
+            {"icon": "cut", "title": {"en": "Remove infected leaves", "hi": "संक्रमित पत्तियाँ हटाएँ", "mr": "संक्रमित पाने काढा"},
+             "detail": {"en": "Cut off spotted lower leaves and destroy them away from the field.", "hi": "धब्बेदार निचली पत्तियों को काटकर खेत से दूर नष्ट करें।", "mr": "डाग असलेली खालची पाने कापून शेतापासून दूर नष्ट करा."}},
+            {"icon": "spray", "title": {"en": "Apply spray", "hi": "छिड़काव करें", "mr": "फवारणी करा"},
+             "detail": {"en": "Apply {REMEDY_TYPE} on all leaves, focusing on the undersides.", "hi": "{REMEDY_TYPE} सभी पत्तियों पर, नीचे की तरफ ध्यान देते हुए लगाएँ।", "mr": "{REMEDY_TYPE} सर्व पानांवर, खालच्या बाजूकडे लक्ष देऊन लावा."}},
+            {"icon": "monitor", "title": {"en": "Re-check weekly", "hi": "साप्ताहिक जाँच करें", "mr": "साप्ताहिक तपासा"},
+             "detail": {"en": "Check for new spots weekly and repeat treatment if needed.", "hi": "नए धब्बों के लिए साप्ताहिक जाँच करें और ज़रूरत पड़ने पर उपचार दोहराएँ।", "mr": "नवीन डागांसाठी साप्ताहिक तपासा आणि गरज पडल्यास उपचार पुन्हा करा."}},
+        ],
+    },
+    "spider mites": {
+        "severity": "Moderate",
+        "reference_image": None,
+        "description": {
+            "en": "Tiny red or yellow pests that cause fine yellow speckling and webbing on leaves, especially in hot dry weather.",
+            "hi": "छोटे लाल या पीले कीट जो गर्म सूखे मौसम में पत्तियों पर महीन पीले धब्बे और जाला बनाते हैं।",
+            "mr": "उष्ण कोरड्या हवामानात पानांवर बारीक पिवळे ठिपके आणि जाळे तयार करणारे लहान लाल किंवा पिवळे किडे.",
+        },
+        "chemical_remedy": {
+            "en": "Spray a miticide (e.g. Abamectin) as per label instructions. Avoid overusing broad chemical pesticides which can kill natural predators.",
+            "hi": "लेबल निर्देशों के अनुसार माइटिसाइड (जैसे एबामेक्टिन) का छिड़काव करें। कीटनाशकों का अधिक उपयोग न करें, इससे प्राकृतिक शिकारी कीट मर जाते हैं।",
+            "mr": "लेबलच्या सूचनांनुसार माइटिसाइड (उदा. अबामेक्टिन) फवारा. जास्त कीटकनाशके वापरू नका, त्यामुळे नैसर्गिक भक्षक किडे मरतात.",
+        },
+        "organic_remedy": {
+            "en": "Spray water forcefully on leaf undersides to knock off mites. Neem oil spray every 5 days also helps.",
+            "hi": "पत्तियों के नीचे तेज़ पानी की धार से मकड़ी कीट हटाएँ। हर 5 दिन में नीम तेल का छिड़काव भी मदद करता है।",
+            "mr": "पानांच्या खालच्या बाजूला जोरात पाणी फवारून कीड काढा. दर 5 दिवसांनी कडुनिंब तेल फवारणीही मदत करते.",
+        },
+        "steps": [
+            {"icon": "water", "title": {"en": "Spray water forcefully", "hi": "तेज़ पानी का छिड़काव करें", "mr": "जोरात पाणी फवारा"},
+             "detail": {"en": "Direct a strong water spray on leaf undersides to physically remove mites.", "hi": "पत्तियों के नीचे तेज़ पानी की धार डालें ताकि कीट हट जाएँ।", "mr": "किडे काढण्यासाठी पानांच्या खालच्या बाजूला जोरदार पाणी फवारा."}},
+            {"icon": "spray", "title": {"en": "Apply treatment", "hi": "उपचार करें", "mr": "उपचार करा"},
+             "detail": {"en": "Apply {REMEDY_TYPE} evenly, focusing on leaf undersides where mites hide.", "hi": "{REMEDY_TYPE} समान रूप से लगाएँ, पत्तियों के नीचे विशेष ध्यान दें जहाँ कीट छिपते हैं।", "mr": "{REMEDY_TYPE} समान लावा, किडे लपतात त्या पानांच्या खालच्या बाजूवर विशेष लक्ष द्या."}},
+            {"icon": "monitor", "title": {"en": "Check in 3-4 days", "hi": "3-4 दिन में जाँचें", "mr": "3-4 दिवसांनी तपासा"},
+             "detail": {"en": "Mite populations grow fast in hot weather — recheck sooner than other diseases.", "hi": "गर्म मौसम में कीट तेज़ी से बढ़ते हैं — जल्दी दोबारा जाँच करें।", "mr": "उष्ण हवामानात किडे वेगाने वाढतात — लवकर पुन्हा तपासा."}},
+        ],
+    },
+    "leaf mold": {
+        "severity": "Moderate",
+        "reference_image": None,
+        "description": {
+            "en": "Yellow patches on top of leaves with a fuzzy grey-green mold underneath, common in humid conditions.",
+            "hi": "पत्तियों के ऊपर पीले धब्बे और नीचे रूई जैसी धूसर-हरी फफूंद, नमी वाले मौसम में आम है।",
+            "mr": "पानांच्या वर पिवळे डाग आणि खाली लोकरीसारखी करडी-हिरवी बुरशी, दमट हवामानात सामान्य आहे.",
+        },
+        "chemical_remedy": {
+            "en": "Spray Chlorothalonil or Mancozeb. Improve ventilation if growing in a greenhouse or polyhouse.",
+            "hi": "क्लोरोथैलोनिल या मैंकोज़ेब का छिड़काव करें। ग्रीनहाउस में हवा का संचार सुधारें।",
+            "mr": "क्लोरोथॅलोनिल किंवा मॅन्कोझेब फवारा. ग्रीनहाऊसमध्ये हवा खेळती ठेवा.",
+        },
+        "organic_remedy": {
+            "en": "Reduce humidity around plants, avoid wetting leaves when watering, and remove affected leaves.",
+            "hi": "पौधों के आसपास नमी कम करें, पानी देते समय पत्तियों को गीला न करें, और प्रभावित पत्तियाँ हटाएँ।",
+            "mr": "रोपांभोवती आर्द्रता कमी करा, पाणी देताना पाने ओली करू नका, आणि प्रभावित पाने काढा.",
+        },
+        "steps": [
+            {"icon": "cut", "title": {"en": "Remove affected leaves", "hi": "प्रभावित पत्तियाँ हटाएँ", "mr": "प्रभावित पाने काढा"},
+             "detail": {"en": "Cut off leaves with yellow patches and fuzzy underside growth.", "hi": "पीले धब्बे और नीचे रूई जैसी वृद्धि वाली पत्तियाँ काट दें।", "mr": "पिवळे डाग आणि खाली लोकरीसारखी वाढ असलेली पाने कापा."}},
+            {"icon": "spray", "title": {"en": "Apply spray", "hi": "छिड़काव करें", "mr": "फवारणी करा"},
+             "detail": {"en": "Apply {REMEDY_TYPE} evenly across the plant.", "hi": "पूरे पौधे पर {REMEDY_TYPE} समान रूप से लगाएँ।", "mr": "संपूर्ण रोपावर {REMEDY_TYPE} समान लावा."}},
+            {"icon": "isolate", "title": {"en": "Reduce humidity", "hi": "नमी कम करें", "mr": "आर्द्रता कमी करा"},
+             "detail": {"en": "Increase spacing between plants and improve airflow to lower humidity.", "hi": "पौधों के बीच दूरी बढ़ाएँ और हवा का संचार सुधारें।", "mr": "रोपांमधील अंतर वाढवा आणि हवा खेळती ठेवा."}},
+        ],
     },
     "healthy": {
         "severity": "None",
@@ -106,7 +211,7 @@ RETAKE_TIPS = {
     "mr": "मॉडेलला सुरक्षित निदान देण्याइतका आत्मविश्वास नाही. कृपया फोटो पुन्हा घ्या. चांगल्या उजेडात, एका पानावर फोकस करा, अस्पष्ट नसावे, आणि साधी पार्श्वभूमी वापरा.",
 }
 
-CONFIDENCE_THRESHOLD = 0.65
+CONFIDENCE_THRESHOLD = 0.40
 
 
 def get_remedy(disease_name: str):

@@ -1,8 +1,10 @@
+from fastapi.staticfiles import StaticFiles
+import os
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from datetime import datetime
-from remedies import get_remedy
+from remedies import get_remedy, get_friendly_name
 from database import get_dashboard_stats
 from database import init_db, insert_report, get_all_reports
 from detection import classify_leaf_image
@@ -14,7 +16,11 @@ app = FastAPI(
     description="SIH26131 — Predictive crop disease & pest early-warning system (demo)",
     version="0.1.0",
 )
-
+app.mount(
+    "/static",
+    StaticFiles(directory=os.path.join(os.path.dirname(__file__), "static")),
+    name="static",
+)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -32,29 +38,29 @@ def startup():
 def root():
     return {"status": "ok", "service": "Kisan Raksha Network API"}
 
-
 @app.post("/detect", tags=["Detection"])
-async def detect_disease(
+async def detect(
+    file: UploadFile,
     crop_type: str = Form(...),
-    file: UploadFile = File(...),
+    growth_stage: str = Form(None),
+    latitude: float = Form(None),
+    longitude: float = Form(None),
 ):
     """Upload a leaf photo -> returns disease classification + explanation."""
     image_bytes = await file.read()
     if not image_bytes:
         raise HTTPException(status_code=400, detail="Empty file uploaded")
-    result = classify_leaf_image(image_bytes, crop_type)
+    result = classify_leaf_image(image_bytes, crop_type, growth_stage)
     return result
-
 
 @app.get("/remedy-lookup", tags=["Detection"])
 def remedy_lookup(disease: str):
-    """Look up full remedy info for a disease name — used when farmer
-    manually confirms a match from the candidate images."""
     remedy = get_remedy(disease)
     is_healthy = "healthy" in disease.lower()
     return {
         "needs_retake": False,
         "disease": disease,
+        "disease_display": {lang: get_friendly_name(disease, lang) for lang in ["en", "hi", "mr"]} if not is_healthy else None,
         "confidence": 0.75,
         "is_healthy": is_healthy,
         "remedy": None if is_healthy else remedy,
